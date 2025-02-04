@@ -1,30 +1,22 @@
 package com.example.parkingspotfinder.presentation.map_screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.parkingspotfinder.R
+import com.example.parkingspotfinder.presentation.map_screen.components.AnimatedThemeToggleFAB
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
+import com.google.maps.android.compose.Marker
 
 @Composable
 fun MapScreen(
@@ -42,27 +34,41 @@ fun MapScreen(
         GoogleMap(
             modifier = Modifier.fillMaxSize(),
             properties = mapState.properties,
-            uiSettings = uiSettings
-        )
+            uiSettings = uiSettings,
+            onMapLongClick = {
+                viewModel.onEvent(MapEvent.OnMapLongClick(it))
+            }
+        ) {
+            mapState.parkingSpots.forEach { spot ->
+                Marker(
+                    position = LatLng(spot.lat, spot.lng),
+                    title = "Parking spot (${spot.lat}, ${spot.lng})",
+                    snippet = "Long click to delete",
+                    onInfoWindowLongClick = {
+                        it.hideInfoWindow()
+                        viewModel.onEvent(
+                            MapEvent.OnInfoWindowLongClick(spot)
+                        )
+                    },
+                    onClick = {
+                        it.showInfoWindow()
+                        true
+                    },
+                    icon = BitmapDescriptorFactory.defaultMarker(
+                        BitmapDescriptorFactory.HUE_GREEN
+                    )
+                )
+            }
+        }
 
-        FloatingActionButton(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            onClick = {
+        AnimatedThemeToggleFAB(
+            isFalloutMap = mapState.isFalloutMap,
+            onToggle = {
                 viewModel.onEvent(MapEvent.ToggleFalloutMap)
             },
-            shape = CircleShape
-        ) {
-            Image(
-                painter = if(mapState.isFalloutMap) {
-                    painterResource(R.drawable.ic_toggle_on)
-                } else {
-                    painterResource(R.drawable.ic_toggle_off)
-                },
-                contentDescription = stringResource(R.string.toggle_fallout_map),
-                modifier = Modifier.size(20.dp)
-            )
-        }
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        )
     }
 }
