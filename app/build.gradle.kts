@@ -66,6 +66,7 @@ dependencies {
 
     // Google Maps
     implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
 
     // Dagger - Hilt
     implementation(libs.hilt.android)
@@ -76,7 +77,5 @@ dependencies {
     // Room
     implementation(libs.androidx.room.runtime)
     kapt(libs.androidx.room.compiler)
-
-    // Kotlin Extensions and Coroutines support for Room
     implementation(libs.androidx.room.ktx)
 }
